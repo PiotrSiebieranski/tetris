@@ -1,7 +1,7 @@
 use raylib::color::Color;
 
 pub const COLORS: [Color; 8] = [
-    Color::new(26, 32, 40, 255),   // dark gray
+    Color::new(36, 42, 58, 255),   // background
     Color::new(47, 230, 23, 255),  // green
     Color::new(232, 18, 18, 255),  // red
     Color::new(226, 116, 17, 255), // orange

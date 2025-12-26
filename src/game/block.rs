@@ -3,7 +3,7 @@ use raylib::prelude::{RaylibDraw, RaylibDrawHandle};
 use super::colors::COLORS;
 
 pub struct Block {
-    kind: BlockKind,
+    pub kind: BlockKind,
     cells: [&'static [(usize, usize)]; 4],
     cellsize: usize,
     rotation_state: usize,
@@ -24,10 +24,9 @@ impl Block {
 
         match kind {
             BlockKind::O => ret.move_by(0, 4),
-            BlockKind::I => ret.move_by(-1, 3),
+            BlockKind::I => ret.move_by(0, 3),
             _ => ret.move_by(0, 3),
         }
-
         ret
     }
 
@@ -45,24 +44,25 @@ impl Block {
     }
 
     pub fn move_by(&mut self, rows: isize, colls: isize) {
-        let row_offset = self.row_offset + rows;
-        let coll_offset = self.coll_offset + colls;
-
-        if row_offset < 0 || coll_offset < 0 {
-            return;
-        }
-
-        self.row_offset = row_offset;
-        self.coll_offset = coll_offset;
+        self.row_offset += rows;
+        self.coll_offset += colls;
     }
 
-    pub fn get_cell_position(&self) -> impl Iterator<Item = (usize, usize)> + '_ {
+    pub fn get_cell_position(&self) -> impl Iterator<Item = (usize, usize)> {
         self.cells[self.rotation_state].iter().map(|&(row, col)| {
             (
                 (col as isize + self.coll_offset) as usize,
                 (row as isize + self.row_offset) as usize,
             )
         })
+    }
+
+    pub fn rotate_right(&mut self) {
+        self.rotation_state = (self.rotation_state + 1) % 4;
+    }
+
+    pub fn rotate_left(&mut self) {
+        self.rotation_state = (self.rotation_state + 3) % 4;
     }
 }
 
