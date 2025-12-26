@@ -48,6 +48,14 @@ impl Block {
         self.coll_offset += colls;
     }
 
+    pub fn rotate_right(&mut self) {
+        self.rotation_state = (self.rotation_state + 1) % 4;
+    }
+
+    pub fn rotate_left(&mut self) {
+        self.rotation_state = (self.rotation_state + 3) % 4;
+    }
+
     pub fn get_cell_position(&self) -> impl Iterator<Item = (usize, usize)> {
         self.cells[self.rotation_state].iter().map(|&(row, col)| {
             (
@@ -55,14 +63,6 @@ impl Block {
                 (row as isize + self.row_offset) as usize,
             )
         })
-    }
-
-    pub fn rotate_right(&mut self) {
-        self.rotation_state = (self.rotation_state + 1) % 4;
-    }
-
-    pub fn rotate_left(&mut self) {
-        self.rotation_state = (self.rotation_state + 3) % 4;
     }
 }
 
@@ -90,7 +90,7 @@ impl BlockKind {
 
             Self::J => [
                 &[(0, 0), (1, 0), (1, 1), (1, 2)],
-                &[(0, 1), (0, 1), (1, 1), (2, 1)],
+                &[(0, 1), (0, 2), (1, 1), (2, 1)],
                 &[(1, 0), (1, 1), (1, 2), (2, 2)],
                 &[(0, 1), (1, 1), (2, 0), (2, 1)],
             ],

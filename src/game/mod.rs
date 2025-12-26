@@ -33,6 +33,13 @@ impl Game {
         }
     }
 
+    pub fn run(&mut self) {
+        while !self.rl.window_should_close() {
+            self.update();
+            self.render();
+        }
+    }
+
     fn render(&mut self) {
         let mut d = self.rl.begin_drawing(&self.thread);
 
@@ -53,13 +60,6 @@ impl Game {
         }
     }
 
-    pub fn run(&mut self) {
-        while !self.rl.window_should_close() {
-            self.update();
-            self.render();
-        }
-    }
-
     fn handle_input(&mut self) {
         let Some(key) = self.rl.get_key_pressed() else {
             return;
@@ -68,8 +68,8 @@ impl Game {
         match key {
             KeyboardKey::KEY_LEFT => self.move_block_left(),
             KeyboardKey::KEY_RIGHT => self.move_block_right(),
-            KeyboardKey::KEY_UP => self.current_block.rotate_right(),
-            KeyboardKey::KEY_DOWN => self.current_block.rotate_left(),
+            KeyboardKey::KEY_UP => self.rotate_block_right(),
+            KeyboardKey::KEY_DOWN => self.rotate_block_left(),
             KeyboardKey::KEY_SPACE => self.hard_drop(),
             _ => {}
         }
@@ -86,6 +86,20 @@ impl Game {
         self.current_block.move_by(0, 1);
         if self.is_block_outside() || !self.block_fits() {
             self.current_block.move_by(0, -1);
+        }
+    }
+
+    fn rotate_block_right(&mut self) {
+        self.current_block.rotate_right();
+        if self.is_block_outside() || !self.block_fits() {
+            self.current_block.rotate_left();
+        }
+    }
+
+    fn rotate_block_left(&mut self) {
+        self.current_block.rotate_left();
+        if self.is_block_outside() || !self.block_fits() {
+            self.current_block.rotate_right();
         }
     }
 
@@ -150,6 +164,7 @@ impl Game {
         while !self.is_block_outside() && self.block_fits() {
             self.current_block.move_by(1, 0);
         }
+
         self.current_block.move_by(-1, 0);
         self.lock_block();
     }
