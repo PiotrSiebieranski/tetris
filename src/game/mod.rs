@@ -21,7 +21,11 @@ pub struct Game {
 
 impl Game {
     pub fn new() -> Self {
-        let (rl, thread) = RaylibBuilder::default().size(300, 600).build();
+        let (rl, thread) = RaylibBuilder::default()
+            .log_level(raylib::ffi::TraceLogLevel::LOG_NONE)
+            .title("Tetris")
+            .size(300, 600)
+            .build();
 
         Self {
             rl,
@@ -71,6 +75,7 @@ impl Game {
             KeyboardKey::KEY_UP => self.rotate_block_right(),
             KeyboardKey::KEY_DOWN => self.rotate_block_left(),
             KeyboardKey::KEY_SPACE => self.hard_drop(),
+            KeyboardKey::KEY_R => self.reset(),
             _ => {}
         }
     }
