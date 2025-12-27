@@ -2,6 +2,8 @@ mod block;
 mod colors;
 mod grid;
 
+use raylib::prelude::RaylibDrawHandle;
+use raylib::window::WindowState;
 use raylib::{
     RaylibBuilder, RaylibHandle, RaylibThread, color::Color, ffi::KeyboardKey, prelude::RaylibDraw,
 };
@@ -10,6 +12,23 @@ use block::Block;
 use block::BlockKind;
 use grid::Grid;
 
+pub trait Entity {
+    fn draw(&self, d: &mut RaylibDrawHandle);
+}
+
+#[derive(Default)]
+struct Stats {
+    score: u32,
+    level: u32,
+    lines: u32,
+}
+
+impl std::fmt::Display for Stats {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "Score: {} | Level: {}", self.score, self.level)
+    }
+}
+
 pub struct Game {
     rl: RaylibHandle,
     thread: RaylibThread,
@@ -17,15 +36,18 @@ pub struct Game {
     current_block: Block,
     last_update_time: f64,
     game_over: bool,
+    stats: Stats,
 }
 
 impl Game {
     pub fn new() -> Self {
-        let (rl, thread) = RaylibBuilder::default()
+        let (mut rl, thread) = RaylibBuilder::default()
             .log_level(raylib::ffi::TraceLogLevel::LOG_NONE)
             .title("Tetris")
             .size(300, 600)
             .build();
+
+        rl.clear_window_state(WindowState::default().set_window_resizable(false));
 
         Self {
             rl,
@@ -34,6 +56,7 @@ impl Game {
             current_block: Block::new(BlockKind::random()),
             last_update_time: 0.,
             game_over: false,
+            stats: Stats::default(),
         }
     }
 
@@ -45,6 +68,9 @@ impl Game {
     }
 
     fn render(&mut self) {
+        self.rl
+            .set_window_title(&self.thread, &format!("Tetris | {}", self.stats));
+
         let mut d = self.rl.begin_drawing(&self.thread);
 
         self.grid.draw(&mut d);
@@ -69,13 +95,14 @@ impl Game {
             return;
         };
 
+        use KeyboardKey::*;
         match key {
-            KeyboardKey::KEY_LEFT => self.move_block_left(),
-            KeyboardKey::KEY_RIGHT => self.move_block_right(),
-            KeyboardKey::KEY_UP => self.rotate_block_right(),
-            KeyboardKey::KEY_DOWN => self.rotate_block_left(),
-            KeyboardKey::KEY_SPACE => self.hard_drop(),
-            KeyboardKey::KEY_R => self.reset(),
+            KEY_LEFT | KEY_H => self.move_block_left(),
+            KEY_RIGHT | KEY_L => self.move_block_right(),
+            KEY_UP | KEY_K => self.rotate_block_right(),
+            KEY_DOWN | KEY_J => self.rotate_block_left(),
+            KEY_SPACE => self.hard_drop(),
+            KEY_R => self.reset(),
             _ => {}
         }
     }
@@ -131,7 +158,9 @@ impl Game {
             self.grid.grid[row][col] = self.current_block.kind as usize;
         }
 
-        self.grid.clear_full_rows();
+        let cleared = self.grid.clear_full_rows();
+        self.add_score(cleared as u32);
+
         self.current_block = Block::new(BlockKind::random());
         if !self.block_fits() {
             self.game_over = true;
@@ -159,12 +188,6 @@ impl Game {
         true
     }
 
-    fn reset(&mut self) {
-        self.grid = Grid::new();
-        self.current_block = Block::new(BlockKind::random());
-        self.game_over = false;
-    }
-
     fn hard_drop(&mut self) {
         while !self.is_block_outside() && self.block_fits() {
             self.current_block.move_by(1, 0);
@@ -172,5 +195,19 @@ impl Game {
 
         self.current_block.move_by(-1, 0);
         self.lock_block();
+    }
+
+    fn reset(&mut self) {
+        self.grid = Grid::new();
+        self.current_block = Block::new(BlockKind::random());
+        self.game_over = false;
+        self.stats = Stats::default();
+    }
+
+    fn add_score(&mut self, cleared: u32) {
+        let table = [0, 40, 100, 300, 1200];
+        self.stats.score += table[cleared as usize] * (self.stats.level + 1);
+        self.stats.lines += cleared;
+        self.stats.level = self.stats.lines / 10;
     }
 }

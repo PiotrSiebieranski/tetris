@@ -1,5 +1,6 @@
 use raylib::prelude::{RaylibDraw, RaylibDrawHandle};
 
+use super::Entity;
 use super::colors::COLORS;
 
 pub struct Block {
@@ -28,19 +29,6 @@ impl Block {
             _ => ret.move_by(0, 3),
         }
         ret
-    }
-
-    pub fn draw(&self, d: &mut RaylibDrawHandle) {
-        let tiles = self.get_cell_position();
-        for tile in tiles {
-            d.draw_rectangle(
-                (tile.0 * self.cellsize + 1) as i32,
-                (tile.1 * self.cellsize + 1) as i32,
-                (self.cellsize - 1) as i32,
-                (self.cellsize - 1) as i32,
-                COLORS[self.kind as usize],
-            );
-        }
     }
 
     pub fn move_by(&mut self, rows: isize, colls: isize) {
@@ -134,6 +122,21 @@ impl BlockKind {
 
     pub fn random() -> Self {
         Self::from(rand::random_range(1..=7))
+    }
+}
+
+impl Entity for Block {
+    fn draw(&self, d: &mut RaylibDrawHandle) {
+        let tiles = self.get_cell_position();
+        for tile in tiles {
+            d.draw_rectangle(
+                (tile.0 * self.cellsize + 1) as i32,
+                (tile.1 * self.cellsize + 1) as i32,
+                (self.cellsize - 1) as i32,
+                (self.cellsize - 1) as i32,
+                COLORS[self.kind as usize],
+            );
+        }
     }
 }
 
