@@ -40,6 +40,18 @@ pub struct Game {
 }
 
 impl Game {
+    const KEYMAP: &[(&[KeyboardKey], fn(&mut Self))] = {
+        use KeyboardKey::*;
+        &[
+            (&[KEY_LEFT, KEY_H], |game| game.move_block_left()),
+            (&[KEY_RIGHT, KEY_L], |game| game.move_block_right()),
+            (&[KEY_UP, KEY_K], |game| game.rotate_block_right()),
+            (&[KEY_DOWN, KEY_J], |game| game.rotate_block_left()),
+            (&[KEY_SPACE], |game| game.hard_drop()),
+            (&[KEY_R], |game| game.reset()),
+        ]
+    };
+
     pub fn new() -> Self {
         let (mut rl, thread) = RaylibBuilder::default()
             .log_level(raylib::ffi::TraceLogLevel::LOG_NONE)
@@ -55,6 +67,7 @@ impl Game {
             grid: Grid::new(),
             current_block: Block::new(BlockKind::random()),
             last_update_time: 0.,
+            last_input: 0.,
             game_over: false,
             stats: Stats::default(),
         }
@@ -95,15 +108,11 @@ impl Game {
             return;
         };
 
-        use KeyboardKey::*;
-        match key {
-            KEY_LEFT | KEY_H => self.move_block_left(),
-            KEY_RIGHT | KEY_L => self.move_block_right(),
-            KEY_UP | KEY_K => self.rotate_block_right(),
-            KEY_DOWN | KEY_J => self.rotate_block_left(),
-            KEY_SPACE => self.hard_drop(),
-            KEY_R => self.reset(),
-            _ => {}
+        for (keys, f) in Self::KEYMAP {
+            if keys.contains(&key) {
+                f(self);
+                break;
+            }
         }
     }
 
