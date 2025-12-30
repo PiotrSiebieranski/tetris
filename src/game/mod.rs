@@ -67,7 +67,6 @@ impl Game {
             grid: Grid::new(),
             current_block: Block::new(BlockKind::random()),
             last_update_time: 0.,
-            last_input: 0.,
             game_over: false,
             stats: Stats::default(),
         }
