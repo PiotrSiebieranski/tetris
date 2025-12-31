@@ -2,15 +2,17 @@ mod block;
 mod colors;
 mod grid;
 
-use raylib::prelude::RaylibDrawHandle;
-use raylib::window::WindowState;
-use raylib::{
-    RaylibBuilder, RaylibHandle, RaylibThread, color::Color, ffi::KeyboardKey, prelude::RaylibDraw,
-};
-
 use block::Block;
 use block::BlockKind;
 use grid::Grid;
+
+use raylib::{
+    color::Color,
+    ffi::{KeyboardKey, TraceLogLevel},
+    prelude::*,
+    window::WindowState,
+    RaylibBuilder, RaylibHandle, RaylibThread,
+};
 
 pub trait Entity {
     fn draw(&self, d: &mut RaylibDrawHandle);
@@ -54,7 +56,7 @@ impl Game {
 
     pub fn new() -> Self {
         let (mut rl, thread) = RaylibBuilder::default()
-            .log_level(raylib::ffi::TraceLogLevel::LOG_NONE)
+            .log_level(TraceLogLevel::LOG_NONE)
             .title("Tetris")
             .size(300, 600)
             .build();
